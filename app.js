@@ -5,6 +5,8 @@ const passport = require('passport');
 const flash = require('connect-flash');
 const session = require('express-session');
 
+const Balance = require('./models/Balance');
+
 const app = express();
 
 // Passport Config
@@ -16,7 +18,7 @@ const db = require('./config/keys').mongoURI;
 // Connect to MongoDB
 mongoose
   .connect(
-    db,
+    db + '/CSRF',
     { useNewUrlParser: true ,useUnifiedTopology: true}
   )
   .then(() => console.log('MongoDB Connected'))
@@ -52,6 +54,19 @@ app.use(function(req, res, next) {
   res.locals.error = req.flash('error');
   next();
 });
+
+function dbInit() {
+  Balance.deleteMany({}, () => {
+    let newBalance = new Balance({
+      name: 'Admin',
+      balance: 5000
+    })
+  
+    newBalance.save();
+  })
+}
+
+dbInit();
 
 // Routes
 app.use('/', require('./routes/index.js'));

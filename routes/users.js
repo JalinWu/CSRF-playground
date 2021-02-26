@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const passport = require('passport');
 // Load User model
 const User = require('../models/User');
+const Balance = require('../models/Balance');
 const { forwardAuthenticated } = require('../config/auth');
 
 // Login Page
@@ -90,6 +91,23 @@ router.get('/logout', (req, res) => {
   req.logout();
   req.flash('success_msg', 'You are logged out');
   res.redirect('/users/login');
+});
+
+// Minus
+router.get('/minus', forwardAuthenticated, (req, res) => {
+  Balance.updateOne({}, {
+    $inc: {
+      balance: -1000
+    }
+  }, async () => {
+    let balanceInfo = await Balance.findOne({});
+    res.render('dashboard', {
+      user: {
+        name: balanceInfo.name
+      },
+      balance: balanceInfo.balance
+    })
+  })
 });
 
 module.exports = router;
